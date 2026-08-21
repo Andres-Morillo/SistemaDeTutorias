@@ -1,21 +1,11 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './components/HelloWorld.vue'  
 import TheWelcome from './components/TheWelcome.vue'
 import login from './components/login.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="vue example" />
-    </div>
-  </header>
-
-  <main>
-    <login />
-  </main>
+  <login></login>>
 </template>
 
 <style scoped>
