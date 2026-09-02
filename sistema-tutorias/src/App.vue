@@ -2,11 +2,36 @@
 import HelloWorld from './components/HelloWorld.vue'  
 import TheWelcome from './components/TheWelcome.vue'
 import login from './components/login.vue'
+import sidebar from './components/sidebar.vue'
+import inicio from './components/inicio.vue'
+
 </script>
 
 <template>
-  <login></login>>
+  <login></login>
+
+  <sidebar>
+  <main class="contenido">
+    <h1>Bienvenido/a</h1>
+    <p>A Sistema de Tutorías</p>
+  </main>
+  </sidebar>
+
+  <inicio>
+    <main class="contenido">
+      <h1>Bienvenido/a</h1>
+      <p>Inicio</p>
+    </main>
+  </inicio>
 </template>
+
+
+<style>
+.contenido {
+  margin-left: 250px;
+  padding: 2rem;
+}
+</style>
 
 <style scoped>
 header {
