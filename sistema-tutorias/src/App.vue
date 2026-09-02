@@ -1,6 +1,4 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'  
-import TheWelcome from './components/TheWelcome.vue'
 import login from './components/login.vue'
 import sidebar from './components/sidebar.vue'
 import inicio from './components/inicio.vue'
@@ -9,6 +7,7 @@ import inicio from './components/inicio.vue'
 
 <template>
   <login></login>
+<sidebar
 
   <sidebar>
   <main class="contenido">
@@ -60,4 +59,9 @@ header {
     flex-wrap: wrap;
   }
 }
+</style>
+
+
+
+<style>
 </style>
