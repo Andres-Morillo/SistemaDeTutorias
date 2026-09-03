@@ -7,8 +7,6 @@ import inicio from './components/inicio.vue'
 
 <template>
   <login></login>
-<sidebar
-
   <sidebar>
   <main class="contenido">
     <h1>Bienvenido/a</h1>
@@ -59,9 +57,4 @@ header {
     flex-wrap: wrap;
   }
 }
-</style>
-
-
-
-<style>
 </style>
