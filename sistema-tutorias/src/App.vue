@@ -2,7 +2,6 @@
 import login from './components/login.vue'
 import sidebar from './components/sidebar.vue'
 import inicio from './components/inicio.vue'
-
 </script>
 
 <template>
@@ -22,6 +21,7 @@ import inicio from './components/inicio.vue'
       <p>Inicio</p>
     </main>
   </inicio>
+  <sidebar></sidebar>
 </template>
 
 
