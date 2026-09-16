@@ -1,35 +1,33 @@
 <template>
   <div class="login-page">
-
     <header class="header">
-      <div class="brand">
-        <div class="logo">
+      <a class="brand" href="#" aria-label="Tuto Script">
+        <div class="logo" aria-hidden="true">
           <span class="logo-person purple"></span>
           <span class="logo-person yellow"></span>
         </div>
 
-        <div>
+        <div class="brand-copy">
           <p class="brand-name">Tuto Script</p>
           <p class="brand-description">Gestión de tutorías escolares</p>
         </div>
-      </div>
+      </a>
 
-      <nav class="navigation">
+      <nav class="navigation" aria-label="Navegación principal">
         <a href="#funciones">Funciones</a>
         <a href="#contacto">Contacto</a>
       </nav>
     </header>
 
     <main class="main-content">
-
       <section class="presentation" id="funciones">
         <span class="eyebrow">
           Hecho para tutores y equipos de acompañamiento
         </span>
 
         <h1>
-          Organizá,<br>
-          acompañá,<br>
+          Organizá,<br />
+          acompañá,<br />
           transformá.
         </h1>
 
@@ -40,66 +38,40 @@
         </p>
 
         <div class="features">
-
-          <div class="feature">
-            <div class="feature-icon purple">
-              ✓
+          <div
+            v-for="feature in features"
+            :key="feature.label"
+            class="feature"
+          >
+            <div class="feature-icon" :class="feature.color" aria-hidden="true">
+              {{ feature.icon }}
             </div>
-            <span>Gestión de tutorías</span>
+            <span>{{ feature.label }}</span>
           </div>
-
-          <div class="feature">
-            <div class="feature-icon yellow">
-              !
-            </div>
-            <span>Notificaciones automáticas</span>
-          </div>
-
-          <div class="feature">
-            <div class="feature-icon blue">
-              ↗
-            </div>
-            <span>Seguimiento académico</span>
-          </div>
-
-          <div class="feature">
-            <div class="feature-icon green">
-              ▤
-            </div>
-            <span>Reportes personalizados</span>
-          </div>
-
         </div>
       </section>
 
-      <section class="login-card">
-
+      <section class="login-card" aria-labelledby="login-title">
         <div class="login-header">
-          <h2>Iniciar sesión</h2>
+          <h2 id="login-title">Iniciar sesión</h2>
           <p>Ingresá tus datos para continuar</p>
         </div>
 
-        <form @submit.prevent="handleSubmit">
-
+        <form @submit.prevent="handleSubmit" novalidate>
           <div class="input-group">
-            <label for="email">
-              Correo o usuario
-            </label>
-
+            <label for="email">Correo o usuario</label>
             <input
               id="email"
-              v-model="form.email"
+              v-model.trim="form.email"
               type="text"
               autocomplete="username"
               placeholder="nombre@escuela.edu.ar"
               required
-            >
+            />
           </div>
 
           <div class="input-group">
-            <label for="password">
-              Contraseña
-            </label>
+            <label for="password">Contraseña</label>
 
             <div class="password-container">
               <input
@@ -109,11 +81,12 @@
                 autocomplete="current-password"
                 placeholder="Tu contraseña"
                 required
-              >
+              />
 
               <button
                 type="button"
                 class="show-password"
+                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                 @click="showPassword = !showPassword"
               >
                 {{ showPassword ? 'Ocultar' : 'Mostrar' }}
@@ -121,35 +94,25 @@
             </div>
           </div>
 
-          <a
-            href="#"
+          <button
+            type="button"
             class="forgot-password"
-            @click.prevent
+            @click="showForgotMessage"
           >
             ¿Olvidaste tu contraseña?
-          </a>
+          </button>
 
           <label class="remember">
-            <input
-              v-model="form.remember"
-              type="checkbox"
-            >
-
+            <input v-model="form.remember" type="checkbox" />
             <span>Recordar usuario</span>
           </label>
 
-          <button
-            type="submit"
-            class="login-button"
-          >
-            Iniciar sesión
-            <span>→</span>
+          <button type="submit" class="login-button" :disabled="isSubmitting">
+            <span>{{ isSubmitting ? 'Ingresando...' : 'Iniciar sesión' }}</span>
+            <span aria-hidden="true">→</span>
           </button>
 
-          <p
-            v-if="statusMessage"
-            class="status-message"
-          >
+          <p v-if="statusMessage" class="status-message" role="status">
             {{ statusMessage }}
           </p>
 
@@ -157,14 +120,12 @@
 
           <p class="register">
             ¿No tenés cuenta?
-            <a href="#" @click.prevent>
+            <button type="button" @click="showRegisterMessage">
               Registrarse
-            </a>
+            </button>
           </p>
-
         </form>
       </section>
-
     </main>
 
     <div class="landscape" aria-hidden="true">
@@ -181,7 +142,6 @@
       <span>✉️ contacto@tutoscript.edu.ar</span>
       <span>📍 La Falda, Córdoba</span>
     </footer>
-
   </div>
 </template>
 
@@ -190,6 +150,7 @@ import { reactive, ref } from 'vue'
 
 const showPassword = ref(false)
 const statusMessage = ref('')
+const isSubmitting = ref(false)
 
 const form = reactive({
   email: '',
@@ -197,16 +158,64 @@ const form = reactive({
   remember: false
 })
 
+const features = [
+  {
+    label: 'Gestión de tutorías',
+    icon: '✓',
+    color: 'purple'
+  },
+  {
+    label: 'Notificaciones automáticas',
+    icon: '!',
+    color: 'yellow'
+  },
+  {
+    label: 'Seguimiento académico',
+    icon: '↗',
+    color: 'blue'
+  },
+  {
+    label: 'Reportes personalizados',
+    icon: '▤',
+    color: 'green'
+  }
+]
+
 function handleSubmit() {
+  statusMessage.value = ''
+
+  if (!form.email || !form.password) {
+    statusMessage.value = 'Completá tu usuario y contraseña para continuar.'
+    return
+  }
+
+  isSubmitting.value = true
+
+  window.setTimeout(() => {
+    isSubmitting.value = false
+    statusMessage.value =
+      'Esto es una vista de demostración — no hay backend conectado todavía.'
+  }, 500)
+}
+
+function showForgotMessage() {
   statusMessage.value =
-    'Esto es una vista de demostración — no hay backend conectado todavía.'
+    'La recuperación de contraseña estará disponible cuando se conecte el backend.'
+}
+
+function showRegisterMessage() {
+  statusMessage.value =
+    'El registro estará disponible cuando se conecte el backend.'
 }
 </script>
 
 <style scoped>
-
 :global(*) {
   box-sizing: border-box;
+}
+
+:global(html) {
+  scroll-behavior: smooth;
 }
 
 :global(html),
@@ -216,69 +225,80 @@ function handleSubmit() {
   min-height: 100%;
 }
 
+:global(body) {
+  background: #faf5ec;
+}
+
+button,
+input {
+  font: inherit;
+}
+
 .login-page {
+  min-height: 100svh;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
   background: #faf5ec;
   color: #231f2c;
   font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
 }
 
 /* HEADER */
 
 .header {
-  max-width: 1160px;
-  height: 92px;
+  width: min(100%, 1160px);
+  min-height: 92px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 18px 20px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 14px;
+  color: inherit;
+  text-decoration: none;
 }
 
 .logo {
+  position: relative;
   width: 52px;
   height: 52px;
+  flex: 0 0 52px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  position: relative;
-
   border: 2px solid #231f2c;
   border-radius: 14px;
   background: #fffdf9;
+  overflow: hidden;
 }
 
 .logo-person {
   position: absolute;
   bottom: 9px;
-
   width: 17px;
   height: 17px;
-
   border-radius: 50%;
 }
 
 .logo-person::after {
   content: "";
   position: absolute;
-
-  width: 25px;
-  height: 14px;
-
   left: 50%;
   bottom: -13px;
+  width: 25px;
+  height: 14px;
   transform: translateX(-50%);
-
   border-radius: 14px 14px 0 0;
 }
 
@@ -314,6 +334,7 @@ function handleSubmit() {
 
 .navigation {
   display: flex;
+  align-items: center;
   gap: 30px;
 }
 
@@ -322,27 +343,35 @@ function handleSubmit() {
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
+  transition: color 160ms ease;
+}
+
+.navigation a:hover,
+.navigation a:focus-visible {
+  color: #231f2c;
 }
 
 /* MAIN */
 
 .main-content {
-  max-width: 1160px;
+  width: min(100%, 1160px);
   margin: 0 auto;
   padding: 54px 20px 0;
 
   display: grid;
-  grid-template-columns: 1fr 430px;
-  gap: 70px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+  align-items: start;
+  gap: clamp(40px, 7vw, 70px);
 }
 
 .presentation {
+  min-width: 0;
   padding-top: 5px;
 }
 
 .eyebrow {
   display: inline-block;
-
+  max-width: 100%;
   padding: 7px 15px;
 
   background: #f4eefb;
@@ -355,11 +384,9 @@ function handleSubmit() {
 
 .presentation h1 {
   margin: 20px 0 0;
-
-  font-size: 62px;
+  font-size: clamp(42px, 5.2vw, 62px);
   line-height: 1.04;
   letter-spacing: -2px;
-
   font-style: italic;
 }
 
@@ -376,7 +403,6 @@ function handleSubmit() {
 
 .features {
   margin-top: 30px;
-
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -386,7 +412,6 @@ function handleSubmit() {
   display: flex;
   align-items: center;
   gap: 14px;
-
   font-size: 16px;
   font-weight: 600;
 }
@@ -394,16 +419,14 @@ function handleSubmit() {
 .feature-icon {
   width: 39px;
   height: 39px;
+  flex: 0 0 39px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
-
   border: 1.5px solid #231f2c;
   border-radius: 50%;
-
   font-weight: 700;
 }
 
@@ -427,11 +450,9 @@ function handleSubmit() {
 
 .login-card {
   width: 100%;
-
   padding: 34px;
 
   background: #fffdf9;
-
   border: 2px solid #231f2c;
   border-radius: 24px;
 }
@@ -444,7 +465,6 @@ function handleSubmit() {
 
 .login-header p {
   margin: 7px 0 0;
-
   color: #6b6577;
   font-size: 14px;
 }
@@ -457,9 +477,7 @@ function handleSubmit() {
 
 .input-group label {
   display: block;
-
   margin-bottom: 8px;
-
   font-size: 13px;
   font-weight: 700;
 }
@@ -467,7 +485,6 @@ function handleSubmit() {
 .input-group input {
   width: 100%;
   height: 46px;
-
   padding: 0 14px;
 
   border: 1.5px solid #231f2c;
@@ -475,14 +492,19 @@ function handleSubmit() {
 
   background: #fffdf9;
   color: #231f2c;
-
-  font-family: inherit;
-  font-size: 15px;
   outline: none;
+
+  font-size: 15px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
 }
 
 .input-group input:focus {
-  background: white;
+  background: #ffffff;
+  border-color: #6b9a55;
+  box-shadow: 0 0 0 3px rgb(107 154 85 / 12%);
 }
 
 .input-group input::placeholder {
@@ -497,12 +519,13 @@ function handleSubmit() {
 }
 
 .password-container input {
+  min-width: 0;
   flex: 1;
 }
 
 .show-password {
   height: 46px;
-
+  flex: 0 0 auto;
   padding: 0 13px;
 
   border: 1.5px solid #231f2c;
@@ -513,25 +536,34 @@ function handleSubmit() {
 
   font-size: 13px;
   font-weight: 600;
-
   cursor: pointer;
+}
+
+.show-password:hover,
+.show-password:focus-visible {
+  background: #f4f0e8;
 }
 
 /* FORGOT */
 
 .forgot-password {
   display: block;
+  margin: 9px 0 0 auto;
+  padding: 0;
 
-  margin-top: 9px;
-
-  text-align: right;
+  border: 0;
+  background: transparent;
 
   color: #6b9a55;
-
-  text-decoration: none;
-
   font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-password:hover,
+.forgot-password:focus-visible {
+  text-decoration: underline;
 }
 
 /* REMEMBER */
@@ -540,11 +572,9 @@ function handleSubmit() {
   display: flex;
   align-items: center;
   gap: 8px;
-
   margin-top: 20px;
 
   color: #6b6577;
-
   font-size: 14px;
   cursor: pointer;
 }
@@ -552,15 +582,17 @@ function handleSubmit() {
 .remember input {
   width: 16px;
   height: 16px;
+  margin: 0;
+  accent-color: #6b9a55;
 }
 
 /* BUTTON */
 
 .login-button {
   width: 100%;
-  height: 50px;
-
+  min-height: 50px;
   margin-top: 24px;
+  padding: 0 18px;
 
   display: flex;
   align-items: center;
@@ -575,11 +607,29 @@ function handleSubmit() {
 
   font-size: 15px;
   font-weight: 700;
-
   cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
 }
 
-.login-button span {
+.login-button:hover:not(:disabled),
+.login-button:focus-visible {
+  background: #61a9dc;
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.login-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.login-button span:last-child {
   font-size: 19px;
 }
 
@@ -587,11 +637,8 @@ function handleSubmit() {
 
 .status-message {
   margin: 12px 0 0;
-
   text-align: center;
-
   color: #6c4b9c;
-
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
@@ -605,28 +652,34 @@ function handleSubmit() {
 
 .register {
   margin: 0;
-
   text-align: center;
-
   color: #6b6577;
   font-size: 14px;
 }
 
-.register a {
+.register button {
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #4e9cd4;
   font-weight: 700;
-  text-decoration: none;
+  cursor: pointer;
+}
+
+.register button:hover,
+.register button:focus-visible {
+  text-decoration: underline;
 }
 
 /* LANDSCAPE */
 
 .landscape {
   position: relative;
-
+  width: 100%;
   height: 220px;
-  margin-top: 55px;
-
+  margin-top: clamp(45px, 6vw, 55px);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .hill {
@@ -653,33 +706,26 @@ function handleSubmit() {
 
 .launch {
   position: absolute;
-
   left: 50%;
   bottom: 8px;
-  transform: translateX(-50%);
-
   width: 52px;
   height: 42px;
+  transform: translateX(-50%);
 
   border: 2px solid #231f2c;
   border-radius: 6px;
-
   background: #faebc7;
 }
 
 .rocket {
   position: absolute;
-
   left: 50%;
   bottom: 39px;
-
   width: 8px;
   height: 55px;
-
   transform: translateX(-50%);
 
   background: #fffdf9;
-
   border: 2px solid #231f2c;
   border-radius: 50% 50% 20% 20%;
 }
@@ -687,15 +733,15 @@ function handleSubmit() {
 /* FOOTER */
 
 .footer {
-  max-width: 1160px;
+  width: min(100%, 1160px);
   min-height: 70px;
-
   margin: 0 auto;
   padding: 0 20px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
 
   color: #6b6577;
   font-size: 14px;
@@ -705,7 +751,7 @@ function handleSubmit() {
 
 @media (max-width: 850px) {
   .header {
-    height: auto;
+    min-height: auto;
     padding-top: 20px;
     padding-bottom: 20px;
   }
@@ -721,7 +767,7 @@ function handleSubmit() {
   }
 
   .presentation h1 {
-    font-size: 48px;
+    font-size: clamp(42px, 9vw, 52px);
   }
 
   .login-card {
@@ -730,6 +776,7 @@ function handleSubmit() {
 
   .footer {
     flex-direction: column;
+    justify-content: center;
     gap: 10px;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -737,12 +784,31 @@ function handleSubmit() {
 }
 
 @media (max-width: 500px) {
+  .header {
+    align-items: flex-start;
+  }
+
+  .brand-description {
+    max-width: 190px;
+  }
+
+  .main-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .presentation h1 {
     font-size: 40px;
+    letter-spacing: -1.5px;
+  }
+
+  .description {
+    font-size: 15px;
   }
 
   .login-card {
     padding: 24px;
+    border-radius: 20px;
   }
 
   .password-container {
@@ -751,6 +817,41 @@ function handleSubmit() {
 
   .show-password {
     width: 100%;
+  }
+
+  .landscape {
+    height: 180px;
+  }
+
+  .footer {
+    padding-left: 16px;
+    padding-right: 16px;
+    font-size: 13px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-name {
+    font-size: 22px;
+  }
+
+  .brand-description {
+    font-size: 12px;
+  }
+
+  .logo {
+    width: 46px;
+    height: 46px;
+    flex-basis: 46px;
+  }
+
+  .presentation h1 {
+    font-size: 36px;
+  }
+
+  .login-card {
+    padding: 20px;
   }
 }
 </style>
