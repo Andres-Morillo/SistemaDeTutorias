@@ -1,67 +1,83 @@
 <script setup>
-import login from './components/login.vue'
-import sidebar from './components/sidebar.vue'
-import inicio from './components/inicio.vue'
-
+import Login from './components/login.vue'
+import Sidebar from './components/sidebar.vue'
+import Inicio from './components/inicio.vue'
 </script>
 
 <template>
-  <login></login>
-<sidebar
+  <div class="app">
 
-  <sidebar>
-  <main class="contenido">
-    <h1>Bienvenido/a</h1>
-    <p>A Sistema de Tutorías</p>
-  </main>
-  </sidebar>
+    <Login />
 
-  <inicio>
-    <main class="contenido">
-      <h1>Bienvenido/a</h1>
-      <p>Inicio</p>
-    </main>
-  </inicio>
+    <div class="layout">
+      <Sidebar />
+
+      <main class="contenido">
+        <Inicio />
+      </main>
+    </div>
+
+  </div>
 </template>
 
-
 <style>
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.app {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Layout general */
+.layout {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+
+  display: flex;
+  align-items: stretch;
+}
+
+/* Contenido situado al lado de la sidebar */
 .contenido {
-  margin-left: 250px;
-  padding: 2rem;
-}
-</style>
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 0;
 
-<style scoped>
-header {
-  line-height: 1.5;
+  padding: clamp(1rem, 3vw, 2rem);
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+/* Evita que el contenido rompa el ancho */
+.contenido > * {
+  max-width: 100%;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+/* Pantallas estrechas */
+@media (max-width: 700px) {
+  .layout {
+    flex-direction: column;
   }
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
+  .contenido {
+    width: 100%;
   }
 }
-</style>
-
-
-
-<style>
 </style>
