@@ -52,79 +52,198 @@
       </section>
 
       <section class="login-card" aria-labelledby="login-title">
-        <div class="login-header">
-          <h2 id="login-title">Iniciar sesión</h2>
-          <p>Ingresá tus datos para continuar</p>
-        </div>
-
-        <form @submit.prevent="handleSubmit" novalidate>
-          <div class="input-group">
-            <label for="email">Correo o usuario</label>
-            <input
-              id="email"
-              v-model.trim="form.email"
-              type="text"
-              autocomplete="username"
-              placeholder="nombre@escuela.edu.ar"
-              required
-            />
+        <template v-if="!isRecovery">
+          <div class="login-header">
+            <h2 id="login-title">Iniciar sesión</h2>
+            <p>Ingresá tus datos para continuar</p>
           </div>
 
-          <div class="input-group">
-            <label for="password">Contraseña</label>
-
-            <div class="password-container">
+          <form @submit.prevent="handleSubmit" novalidate>
+            <div class="input-group">
+              <label for="email">Correo o usuario</label>
               <input
-                id="password"
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                autocomplete="current-password"
-                placeholder="Tu contraseña"
+                id="email"
+                v-model.trim="form.email"
+                type="text"
+                autocomplete="username"
+                placeholder="nombre@escuela.edu.ar"
                 required
               />
-
-              <button
-                type="button"
-                class="show-password"
-                :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-                @click="showPassword = !showPassword"
-              >
-                {{ showPassword ? 'Ocultar' : 'Mostrar' }}
-              </button>
             </div>
+
+            <div class="input-group">
+              <label for="password">Contraseña</label>
+
+              <div class="password-container">
+                <input
+                  id="password"
+                  v-model="form.password"
+                  :type="showPassword ? 'text' : 'password'"
+                  autocomplete="current-password"
+                  placeholder="Tu contraseña"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="show-password"
+                  :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                  @click="showPassword = !showPassword"
+                >
+                  {{ showPassword ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="forgot-password"
+              @click="openRecovery"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+
+            <label class="remember">
+              <input v-model="form.remember" type="checkbox" />
+              <span>Recordar usuario</span>
+            </label>
+
+            <button type="submit" class="login-button" :disabled="isSubmitting">
+              <span>{{ isSubmitting ? 'Ingresando...' : 'Iniciar sesión' }}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+
+            <p v-if="statusMessage" class="status-message" role="status">
+              {{ statusMessage }}
+            </p>
+
+            <div class="separator"></div>
+
+            <p class="register">
+              ¿No tenés cuenta?
+              <button type="button" @click="solicitarRegistro">
+                Registrarse
+              </button>
+            </p>
+          </form>
+        </template>
+
+        <template v-else>
+          <div class="login-header">
+            <h2>Recuperar contraseña</h2>
+            <p>Te guiamos para recuperar el acceso a tu cuenta</p>
           </div>
 
-          <button
-            type="button"
-            class="forgot-password"
-            @click="showForgotMessage"
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
+          <form v-if="recoveryStep === 'request'" @submit.prevent="sendRecovery" novalidate>
+            <div class="input-group">
+              <label for="recovery-email">Correo institucional</label>
+              <input
+                id="recovery-email"
+                v-model.trim="recoveryEmail"
+                type="email"
+                autocomplete="email"
+                placeholder="nombre@escuela.edu.ar"
+                required
+              />
+            </div>
 
-          <label class="remember">
-            <input v-model="form.remember" type="checkbox" />
-            <span>Recordar usuario</span>
-          </label>
+            <p class="recovery-label">Elegí cómo recibir las instrucciones</p>
+            <div class="recovery-options" role="group" aria-label="Método de recuperación">
+              <button
+                type="button"
+                class="recovery-option"
+                :class="{ selected: recoveryMethod === 'codigo' }"
+                :aria-pressed="recoveryMethod === 'codigo'"
+                @click="recoveryMethod = 'codigo'"
+              >
+                <strong>Código</strong>
+                <small>Ingresar un código de 4 dígitos</small>
+              </button>
+              <button
+                type="button"
+                class="recovery-option"
+                :class="{ selected: recoveryMethod === 'enlace' }"
+                :aria-pressed="recoveryMethod === 'enlace'"
+                @click="recoveryMethod = 'enlace'"
+              >
+                <strong>Enlace</strong>
+                <small>Abrir un enlace de recuperación</small>
+              </button>
+            </div>
 
-          <button type="submit" class="login-button" :disabled="isSubmitting">
-            <span>{{ isSubmitting ? 'Ingresando...' : 'Iniciar sesión' }}</span>
-            <span aria-hidden="true">→</span>
-          </button>
+            <p v-if="recoveryMessage" class="status-message" role="status">
+              {{ recoveryMessage }}
+            </p>
 
-          <p v-if="statusMessage" class="status-message" role="status">
-            {{ statusMessage }}
-          </p>
-
-          <div class="separator"></div>
-
-          <p class="register">
-            ¿No tenés cuenta?
-            <button type="button" @click="showRegisterMessage">
-              Registrarse
+            <button type="submit" class="login-button">
+              <span>Continuar</span><span aria-hidden="true">→</span>
             </button>
-          </p>
-        </form>
+          </form>
+
+          <div v-else-if="recoveryStep === 'verify'">
+            <div class="recovery-note" role="status">
+              <strong>Protocolo de prueba</strong>
+              <span>En un sistema real enviaríamos este código a {{ recoveryEmail }}.</span>
+              <span class="demo-code">{{ recoveryExpectedCode }}</span>
+            </div>
+            <form @submit.prevent="verifyRecoveryCode" novalidate>
+              <div class="input-group">
+                <label for="recovery-code">Código de verificación</label>
+                <input
+                  id="recovery-code"
+                  v-model.trim="recoveryCodeInput"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="one-time-code"
+                  maxlength="4"
+                  placeholder="1234"
+                  required
+                />
+              </div>
+              <p v-if="recoveryMessage" class="status-message" role="status">
+                {{ recoveryMessage }}
+              </p>
+              <button type="submit" class="login-button">
+                <span>Verificar código</span><span aria-hidden="true">→</span>
+              </button>
+            </form>
+          </div>
+
+          <div v-else-if="recoveryStep === 'sent-link'" class="recovery-note" role="status">
+            <strong>Enlace de prueba generado</strong>
+            <span>En un sistema real enviaríamos el enlace a {{ recoveryEmail }}.</span>
+            <a class="recovery-link" :href="recoveryUrl">Abrir enlace de recuperación</a>
+          </div>
+
+          <form v-else-if="recoveryStep === 'reset'" @submit.prevent="resetPassword" novalidate>
+            <p class="recovery-note" role="status">
+              {{ recoveryMethod === 'enlace' ? 'Enlace de prueba validado.' : 'Código verificado.' }} Elegí una contraseña nueva.
+            </p>
+            <div class="input-group">
+              <label for="new-password">Nueva contraseña</label>
+              <input id="new-password" v-model="newPassword" type="password" autocomplete="new-password" required />
+            </div>
+            <div class="input-group">
+              <label for="confirm-new-password">Confirmar contraseña</label>
+              <input id="confirm-new-password" v-model="confirmNewPassword" type="password" autocomplete="new-password" required />
+            </div>
+            <p v-if="recoveryMessage" class="status-message" role="status">
+              {{ recoveryMessage }}
+            </p>
+            <button type="submit" class="login-button">
+              <span>Restablecer contraseña</span><span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div v-else class="recovery-note" role="status">
+            <strong>Protocolo completado</strong>
+            <span>La contraseña de prueba se restableció. Ya podés volver al acceso.</span>
+          </div>
+
+          <button type="button" class="recovery-back" @click="closeRecovery">
+            ← Volver a iniciar sesión
+          </button>
+        </template>
       </section>
     </main>
 
@@ -147,6 +266,24 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+
+const emit = defineEmits(['cambiar-a-registro', 'iniciar-sesion'])
+
+const initialRecoveryParams = new URLSearchParams(window.location.search)
+const hasRecoveryParams = initialRecoveryParams.get('flujo') === 'recuperar'
+const recoveryToken = initialRecoveryParams.get('token') || ''
+const recoveryExpectedCode = ref(initialRecoveryParams.get('codigo') || '1234')
+const recoveryMethod = ref(initialRecoveryParams.get('metodo') || (recoveryToken ? 'enlace' : 'codigo'))
+const recoveryStep = ref(
+  recoveryToken ? 'reset' : initialRecoveryParams.has('codigo') ? 'verify' : 'request'
+)
+const isRecovery = ref(hasRecoveryParams)
+const recoveryEmail = ref(initialRecoveryParams.get('email') || '')
+const recoveryCodeInput = ref('')
+const recoveryUrl = ref('')
+const recoveryMessage = ref('')
+const newPassword = ref('')
+const confirmNewPassword = ref('')
 
 const showPassword = ref(false)
 const statusMessage = ref('')
@@ -193,19 +330,80 @@ function handleSubmit() {
 
   window.setTimeout(() => {
     isSubmitting.value = false
-    statusMessage.value =
-      'Esto es una vista de demostración — no hay backend conectado todavía.'
+    statusMessage.value = 'Sesión de prueba iniciada.'
+    emit('iniciar-sesion', {
+      email: form.email,
+      name: form.email.includes('@') ? form.email.split('@')[0] : form.email,
+      role: 'docente'
+    })
   }, 500)
 }
 
-function showForgotMessage() {
-  statusMessage.value =
-    'La recuperación de contraseña estará disponible cuando se conecte el backend.'
+function openRecovery() {
+  isRecovery.value = true
+  recoveryEmail.value = form.email.includes('@') ? form.email : ''
+  recoveryMessage.value = ''
 }
 
-function showRegisterMessage() {
-  statusMessage.value =
-    'El registro estará disponible cuando se conecte el backend.'
+function sendRecovery() {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recoveryEmail.value)) {
+    recoveryMessage.value = 'Ingresá un correo válido para continuar.'
+    return
+  }
+
+  recoveryMessage.value = ''
+  const params = new URLSearchParams({
+    flujo: 'recuperar',
+    email: recoveryEmail.value,
+    metodo: recoveryMethod.value
+  })
+
+  if (recoveryMethod.value === 'codigo') {
+    recoveryExpectedCode.value = '1234'
+    recoveryCodeInput.value = ''
+    params.set('codigo', recoveryExpectedCode.value)
+    recoveryStep.value = 'verify'
+    return
+  }
+
+  const token = `prueba-${Date.now()}`
+  params.set('token', token)
+  recoveryUrl.value = `${window.location.origin}${window.location.pathname}?${params.toString()}`
+  recoveryStep.value = 'sent-link'
+}
+
+function verifyRecoveryCode() {
+  if (recoveryCodeInput.value !== recoveryExpectedCode.value) {
+    recoveryMessage.value = 'El código no coincide. Revisá el código de prueba e intentá de nuevo.'
+    return
+  }
+  recoveryMessage.value = ''
+  recoveryStep.value = 'reset'
+}
+
+function resetPassword() {
+  if (newPassword.value.length < 8) {
+    recoveryMessage.value = 'La contraseña debe tener al menos 8 caracteres.'
+    return
+  }
+  if (newPassword.value !== confirmNewPassword.value) {
+    recoveryMessage.value = 'Las contraseñas no coinciden.'
+    return
+  }
+  recoveryMessage.value = ''
+  recoveryStep.value = 'complete'
+  window.history.replaceState({}, document.title, window.location.pathname)
+}
+
+function closeRecovery() {
+  isRecovery.value = false
+  recoveryStep.value = 'request'
+  recoveryMessage.value = ''
+  window.history.replaceState({}, document.title, window.location.pathname)
+}
+
+function solicitarRegistro() {
+  emit('cambiar-a-registro')
 }
 </script>
 
@@ -563,6 +761,94 @@ input {
 
 .forgot-password:hover,
 .forgot-password:focus-visible {
+  text-decoration: underline;
+}
+
+.recovery-label {
+  margin: 20px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recovery-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.recovery-option {
+  min-height: 76px;
+  padding: 11px;
+  border: 1.5px solid #231f2c;
+  border-radius: 10px;
+  background: #fffdf9;
+  color: #231f2c;
+  text-align: left;
+  cursor: pointer;
+}
+
+.recovery-option.selected {
+  background: #e2eeda;
+  box-shadow: 0 0 0 2px rgb(107 154 85 / 18%);
+}
+
+.recovery-option strong,
+.recovery-option small {
+  display: block;
+}
+
+.recovery-option small {
+  margin-top: 5px;
+  color: #6b6577;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.recovery-note {
+  display: grid;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 15px;
+  border: 1.5px solid #231f2c;
+  border-radius: 10px;
+  background: #faebc7;
+  color: #231f2c;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.demo-code {
+  justify-self: start;
+  padding: 7px 12px;
+  border: 1.5px solid #231f2c;
+  border-radius: 8px;
+  background: #fffdf9;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.recovery-link {
+  color: #46733c;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.recovery-back {
+  display: block;
+  margin: 20px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6b6577;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.recovery-back:hover,
+.recovery-back:focus-visible {
+  color: #231f2c;
   text-decoration: underline;
 }
 

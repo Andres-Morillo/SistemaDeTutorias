@@ -1,0 +1,32 @@
+<template>
+  <div class="reports-page">
+    <aside class="sidebar">
+      <a class="brand" href="#"><span class="logo">◉</span><span><strong>Tuto Script</strong><small>Gestión de tutorías escolares</small></span></a>
+      <nav class="menu"><a href="#">⌂ <span>Inicio</span></a><a href="#">＋ <span>Nueva citación</span></a><a href="#">▣ <span>Mis citaciones</span></a><a href="#">▦ <span>Materias</span></a><a href="#">▦ <span>Estudiantes</span></a><a href="#">▦ <span>Horarios de tutorías</span></a><a class="active" href="#">▤ <span>Reportes</span></a><a href="#">⚙ <span>Configuración</span></a></nav>
+      <div class="contact"><b>Contactos</b><p>☎ 03548 123456</p><p>✉ contacto@gmail.com</p><p>⌖ La Falda, Córdoba</p></div>
+    </aside>
+    <main class="content">
+      <header class="topbar"><div><span class="eyebrow">Seguimiento docente</span><h1>Reportes</h1><p>Seleccioná el tipo de reporte que querés generar.</p></div><button class="bell" type="button">♧</button></header>
+      <section class="report-card"><span class="section-label">Tipo de reporte</span><h2>¿Qué información querés consultar?</h2><div class="report-options"><button v-for="report in reports" :key="report.id" :class="['report-option', report.color, { selected: selected === report.id }]" type="button" @click="selected = report.id"><span class="report-icon">{{ report.icon }}</span><span><strong>{{ report.title }}</strong><small>{{ report.description }}</small></span><span class="radio">{{ selected === report.id ? '✓' : '○' }}</span></button></div></section>
+      <section class="date-card"><div><span class="section-label">Rango de fecha</span><h2>Seleccioná el período</h2></div><div class="date-fields"><label>Desde<input v-model="from" type="date"></label><span>hasta</span><label>Hasta<input v-model="to" type="date"></label></div><button class="generate" type="button" @click="generate">Generar reporte <span>→</span></button><p v-if="message" class="message">{{ message }}</p></section>
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+const selected = ref('attendance')
+const from = ref('2026-10-01')
+const to = ref('2026-10-16')
+const message = ref('')
+const reports = [
+  { id: 'attendance', title: 'Asistencia a tutorías', description: 'Consultá la asistencia de tus estudiantes', icon: '●', color: 'green' },
+  { id: 'subject', title: 'Citación por materia', description: 'Revisá las citaciones organizadas', icon: '▤', color: 'purple' },
+  { id: 'students', title: 'Estudiantes citados', description: 'Analizá el seguimiento individual', icon: '●', color: 'yellow' }
+]
+function generate() { message.value = 'El reporte está listo para generarse.' }
+</script>
+
+<style scoped>
+:global(*){box-sizing:border-box}:global(body){margin:0;background:#faf5ec;color:#231f2c;font-family:Arial,Helvetica,sans-serif}.reports-page{min-height:100vh;display:flex;background:#faf5ec}.sidebar{width:266px;min-height:100vh;padding:24px 18px;border-right:2px solid;background:#fffdf9;display:flex;flex-direction:column}.brand{display:flex;align-items:center;gap:11px;color:inherit;text-decoration:none}.brand strong{display:block;font-size:20px}.brand small,.contact p{display:block;color:#6b6577;font-size:11px}.logo{display:grid;place-items:center;width:43px;height:43px;border:2px solid;border-radius:12px;background:#dceef9}.menu{display:grid;gap:5px;margin-top:42px}.menu a{display:flex;gap:12px;padding:11px 12px;border-radius:10px;color:#6b6577;text-decoration:none;font-size:13px;font-weight:600}.menu a.active,.menu a:hover{background:#f4eefb;color:#6c4b9c}.contact{margin-top:auto;padding:17px;border:1.5px solid;border-radius:13px;background:#faf5ec;font-size:12px}.contact b{font-size:14px}.contact p{margin:9px 0;font-size:12px}.content{width:min(100%,1100px);flex:1;padding:38px 46px}.topbar{display:flex;justify-content:space-between}.eyebrow,.section-label{color:#6c4b9c;font-size:12px;font-weight:700}.topbar h1{margin:9px 0 5px;font-size:32px;font-style:italic}.topbar p{margin:0;color:#6b6577}.bell{width:40px;height:40px;border:1.5px solid;border-radius:50%;background:#fffdf9;font-size:20px}.report-card,.date-card{margin-top:30px;padding:25px;border:1.5px solid;border-radius:18px;background:#fffdf9}.date-card{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:end;margin-top:20px}.report-card h2,.date-card h2{margin:6px 0 0;font-size:21px;font-style:italic}.report-options{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:23px}.report-option{position:relative;display:flex;align-items:center;gap:12px;min-height:120px;padding:16px;border:1.5px solid;border-radius:13px;text-align:left;color:#231f2c;cursor:pointer}.report-option.green{background:#e2eeda}.report-option.purple{background:#f4eefb}.report-option.yellow{background:#faebc7}.report-option.selected{box-shadow:0 0 0 3px rgb(107 154 85 / 20%);transform:translateY(-2px)}.report-icon{display:grid;place-items:center;width:42px;height:42px;border:1.5px solid;border-radius:50%;font-size:18px}.report-option strong{display:block;font-size:13px}.report-option small{display:block;max-width:145px;margin-top:7px;color:#6b6577;font-size:11px;line-height:1.35}.radio{position:absolute;right:11px;top:10px;font-size:17px}.date-fields{display:flex;align-items:end;gap:12px}.date-fields label{display:flex;flex-direction:column;gap:7px;color:#6b6577;font-size:11px;font-weight:700}.date-fields input{height:42px;padding:0 11px;border:1.5px solid;border-radius:9px;background:#fffdf9;font:inherit}.date-fields>span{padding-bottom:12px;color:#6b6577;font-size:12px}.generate{grid-column:2;padding:12px 17px;border:1.5px solid;border-radius:10px;background:#4e9cd4;font-weight:700;cursor:pointer}.generate span{font-size:18px}.message{grid-column:1/-1;margin:0;color:#6c4b9c;font-size:12px;font-weight:700}@media(max-width:850px){.sidebar{width:220px}.content{padding-left:25px;padding-right:25px}.report-options{grid-template-columns:1fr}.date-card{display:block}.date-fields{margin-top:20px}.generate{margin-top:18px}.message{margin-top:14px}}@media(max-width:600px){.reports-page{display:block}.sidebar{width:100%;min-height:auto;border-right:0;border-bottom:2px solid}.menu{grid-template-columns:1fr 1fr;margin-top:25px}.contact{display:none}.content{padding:26px 16px}.date-fields{display:grid;grid-template-columns:1fr 1fr}.date-fields>span{display:none}.generate{width:100%}}
+</style>
