@@ -10,6 +10,7 @@ import SistemaPreceptoria from './components/SistemaPreceptoria.vue'
 import EstudiantesCoordinacion from './components/EstudiantesCoordinacion.vue'
 import ReportesDireccion from './components/ReportesDireccion.vue'
 import MiPerfil from './components/MiPerfil.vue'
+import HorarioTutorias from './components/HorarioTutorias.vue'
 
 const sessionStorageKey = 'tutoScript.session'
 const recoveryRequested = new URLSearchParams(window.location.search).get('flujo') === 'recuperar'
@@ -23,7 +24,8 @@ const sectionViews = {
   'mis-citaciones': MisCitaciones,
   asistencia: SistemaPreceptoria,
   estudiantes: EstudiantesCoordinacion,
-  reportes: ReportesDireccion
+  reportes: ReportesDireccion,
+  horarios: HorarioTutorias
 }
 const sectionTitles = {
   'mis-citaciones': 'Mis Citaciones',
