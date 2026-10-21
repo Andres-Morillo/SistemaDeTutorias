@@ -87,9 +87,10 @@
             <select id="role" v-model="form.role" required>
               <option disabled value="">Seleccioná tu rol</option>
               <option value="docente">Docente</option>
+              <option value="estudiante">Estudiante</option>
               <option value="preceptor">Preceptor</option>
-              <option value="coordinacion">Coordinación</option>
-              <option value="directivo">Directivo</option>
+              <option value="coordinador">Coordinador</option>
+              <option value="director">Director</option>
             </select>
           </div>
 

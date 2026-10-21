@@ -1,10 +1,5 @@
 <template>
   <div class="reports-page">
-    <aside class="sidebar">
-      <a class="brand" href="#"><span class="logo">◉</span><span><strong>Tuto Script</strong><small>Gestión de tutorías escolares</small></span></a>
-      <nav class="menu"><a href="#">⌂ <span>Inicio</span></a><a href="#">＋ <span>Nueva citación</span></a><a href="#">▣ <span>Mis citaciones</span></a><a href="#">▦ <span>Materias</span></a><a href="#">▦ <span>Estudiantes</span></a><a href="#">▦ <span>Horarios de tutorías</span></a><a class="active" href="#">▤ <span>Reportes</span></a><a href="#">⚙ <span>Configuración</span></a></nav>
-      <div class="contact"><b>Contactos</b><p>☎ 03548 123456</p><p>✉ contacto@gmail.com</p><p>⌖ La Falda, Córdoba</p></div>
-    </aside>
     <main class="content">
       <header class="topbar"><div><span class="eyebrow">Seguimiento docente</span><h1>Reportes</h1><p>Seleccioná el tipo de reporte que querés generar.</p></div><button class="bell" type="button">♧</button></header>
       <section class="report-card"><span class="section-label">Tipo de reporte</span><h2>¿Qué información querés consultar?</h2><div class="report-options"><button v-for="report in reports" :key="report.id" :class="['report-option', report.color, { selected: selected === report.id }]" type="button" @click="selected = report.id"><span class="report-icon">{{ report.icon }}</span><span><strong>{{ report.title }}</strong><small>{{ report.description }}</small></span><span class="radio">{{ selected === report.id ? '✓' : '○' }}</span></button></div></section>

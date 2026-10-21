@@ -188,11 +188,18 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
 
+const props = defineProps({
+  citations: {
+    type: Array,
+    default: () => []
+  }
+})
+
 const pageSize = 5
 const currentPage = ref(1)
 const activeNotificationId = ref(null)
 
-const citations = [
+const sampleCitations = [
   { id: 1, date: '2026-10-02', time: '09:00', course: '4°', subject: 'Programación', teacher: 'Juan Pérez', students: ['María Gómez', 'Lucas Díaz'], reason: 'Recuperación de contenido', status: 'Pendiente', notification: 'Email' },
   { id: 2, date: '2026-10-01', time: '10:30', course: '3°', subject: 'Matemática', teacher: 'Ana Torres', students: ['Sofía López'], reason: 'Seguimiento de trabajos', status: 'Realizada', notification: 'WhatsApp' },
   { id: 3, date: '2026-09-30', time: '11:00', course: '4°', subject: 'Programación', teacher: 'Juan Pérez', students: ['Lucas Díaz', 'Tomás Ruiz', 'Malena Sosa'], reason: 'Recuperación de contenido', status: 'Pendiente', notification: 'Ambos' },
@@ -206,6 +213,7 @@ const citations = [
   { id: 11, date: '2026-09-18', time: '09:15', course: '6°', subject: 'Historia', teacher: 'Ana Torres', students: ['Emma Gil'], reason: 'Acompañamiento académico', status: 'Anulada', notification: 'WhatsApp' },
   { id: 12, date: '2026-09-17', time: '12:00', course: '4°', subject: 'Programación', teacher: 'Juan Pérez', students: ['Tomás Ruiz', 'Malena Sosa'], reason: 'Entrega de proyecto', status: 'Pendiente', notification: 'Ambos' }
 ]
+const citations = computed(() => [...props.citations, ...sampleCitations])
 
 const filters = reactive({
   date: 'all',
@@ -225,7 +233,7 @@ const filterOptions = {
   statuses: uniqueValues('status')
 }
 
-const filteredCitations = computed(() => citations.filter((citation) => {
+const filteredCitations = computed(() => citations.value.filter((citation) => {
   return (filters.date === 'all' || citation.date === filters.date)
     && (filters.course === 'all' || citation.course === filters.course)
     && (filters.subject === 'all' || citation.subject === filters.subject)
@@ -250,7 +258,7 @@ watch(totalPages, (pageCount) => {
 })
 
 function uniqueValues(key) {
-  const values = citations.flatMap((citation) => key === 'students' ? citation.students : [citation[key]])
+  const values = citations.value.flatMap((citation) => key === 'students' ? citation.students : [citation[key]])
   return [...new Set(values)].sort((first, second) => first.localeCompare(second, 'es'))
 }
 
@@ -515,6 +523,11 @@ function clearFilters() {
 .status-anulada {
   background: #f6dfdc;
   color: #8a4942;
+}
+
+.status-borrador {
+  background: #e5e2e9;
+  color: #615a68;
 }
 
 .notification-cell {

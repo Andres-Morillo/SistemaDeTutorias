@@ -69,26 +69,27 @@
             ><b>{{ pendingCount }}</b> pendientes</span
           >
         </div>
-        <button class="save" type="button" @click="saved = true">
+        <button class="save" type="button" @click="saveAttendance">
           Guardar asistencia <span>→</span>
         </button>
-        <p v-if="saved" class="message">Asistencia guardada correctamente.</p>
+        <p v-if="message" class="message" role="status">{{ message }}</p>
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 const date = ref("2026-10-16");
 const course = ref("2");
-const saved = ref(false);
-const students = reactive([
+const message = ref("");
+const sampleStudents = [
   { id: 1, name: "Juan Perez", status: "Pendiente" },
   { id: 2, name: "Marta Gomez", status: "Presente" },
   { id: 3, name: "Leandro Diaz", status: "Ausente" },
   { id: 4, name: "Camila Ruiz", status: "Presente" },
-]);
+];
+const students = reactive(sampleStudents.map((student) => ({ ...student })));
 const presentCount = computed(
   () => students.filter((student) => student.status === "Presente").length,
 );
@@ -98,6 +99,31 @@ const absentCount = computed(
 const pendingCount = computed(
   () => students.filter((student) => student.status === "Pendiente").length,
 );
+watch([date, course], loadAttendance, { immediate: true });
+function loadAttendance() {
+  const key = `tutoScript.attendance.${date.value}.${course.value}`;
+  try {
+    const stored = localStorage.getItem(key);
+    const records = stored ? JSON.parse(stored) : sampleStudents;
+    if (!Array.isArray(records)) throw new TypeError("El registro de asistencia no es válido.");
+    students.splice(0, students.length, ...records);
+    message.value = "";
+  } catch (error) {
+    console.error("No se pudo cargar la asistencia.", error);
+    students.splice(0, students.length, ...sampleStudents.map((student) => ({ ...student })));
+    message.value = "No se pudo cargar la asistencia guardada; se muestran datos de ejemplo.";
+  }
+}
+function saveAttendance() {
+  const key = `tutoScript.attendance.${date.value}.${course.value}`;
+  try {
+    localStorage.setItem(key, JSON.stringify(students));
+    message.value = "Asistencia guardada en este navegador.";
+  } catch (error) {
+    console.error("No se pudo guardar la asistencia.", error);
+    message.value = "No se pudo guardar la asistencia. Revisá el almacenamiento del navegador.";
+  }
+}
 const initials = (name) =>
   name
     .split(" ")

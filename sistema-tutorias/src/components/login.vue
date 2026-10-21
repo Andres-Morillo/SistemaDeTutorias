@@ -333,8 +333,7 @@ function handleSubmit() {
     statusMessage.value = 'Sesión de prueba iniciada.'
     emit('iniciar-sesion', {
       email: form.email,
-      name: form.email.includes('@') ? form.email.split('@')[0] : form.email,
-      role: 'docente'
+      name: form.email.includes('@') ? form.email.split('@')[0] : form.email
     })
   }, 500)
 }

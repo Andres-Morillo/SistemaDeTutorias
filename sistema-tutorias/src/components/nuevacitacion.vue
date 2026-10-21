@@ -10,7 +10,7 @@
         <span class="heading-mark" aria-hidden="true">＋</span>
       </header>
 
-      <form class="citation-form" @submit.prevent>
+      <form class="citation-form" @submit.prevent="submitCitation">
         <section class="form-section summary-section" aria-labelledby="summary-title">
           <h2 id="summary-title">Datos del curso</h2>
           <table class="summary-table">
@@ -106,6 +106,12 @@
 
         <footer class="form-actions">
           <button
+            class="action-button action-button--submit"
+            type="submit"
+          >
+            Guardar citación
+          </button>
+          <button
             class="action-button action-button--draft"
             type="button"
             @click="emit('guardar-borrador', { ...form })"
@@ -135,7 +141,7 @@
 <script setup>
 import { computed, reactive } from 'vue'
 
-const emit = defineEmits(['guardar-borrador', 'anular-citacion', 'cancelar'])
+const emit = defineEmits(['guardar-borrador', 'guardar-citacion', 'anular-citacion', 'cancelar'])
 
 const summary = [
   { label: 'Curso', value: '4°' },
@@ -184,6 +190,10 @@ const formattedDate = computed(() => {
 
   return label.charAt(0).toLocaleUpperCase('es-AR') + label.slice(1)
 })
+
+function submitCitation() {
+  emit('guardar-citacion', { ...form })
+}
 </script>
 
 <style scoped>
@@ -433,6 +443,12 @@ const formattedDate = computed(() => {
 
 .action-button--draft {
   background: #f0cf78;
+}
+
+.action-button--submit {
+  border-color: #46733c;
+  background: #e2eeda;
+  color: #36542f;
 }
 
 .action-button--void {

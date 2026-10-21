@@ -1,12 +1,57 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   activeView: {
     type: String,
     default: 'inicio'
+  },
+  role: {
+    type: String,
+    default: 'docente'
   }
 })
 
 const emit = defineEmits(['navigate', 'logout'])
+
+const menuByRole = {
+  estudiante: [{ id: 'inicio', icon: '🏠', label: 'Mi inicio' }],
+  docente: [
+    { id: 'inicio', icon: '🏠', label: 'Panel principal' },
+    { id: 'perfil-docente', icon: '♙', label: 'Mi perfil' },
+    { id: 'nueva-citacion', icon: '➕', label: 'Nueva citación' },
+    { id: 'mis-citaciones', icon: '📋', label: 'Mis citaciones' },
+    { id: 'materias', icon: '📖', label: 'Materias' },
+    { id: 'estudiantes-docente', icon: '👥', label: 'Mis estudiantes' },
+    { id: 'horarios', icon: '📅', label: 'Horario de tutorías' },
+    { id: 'reporte-docente', icon: '📊', label: 'Reportes' },
+    { id: 'configuracion', icon: '⚙️', label: 'Configuración' }
+  ],
+  preceptor: [
+    { id: 'inicio', icon: '🏠', label: 'Panel principal' },
+    { id: 'asistencia', icon: '✓', label: 'Asistencia' },
+    { id: 'estudiantes-preceptoria', icon: '👥', label: 'Estudiantes' },
+    { id: 'tutorias-preceptoria', icon: '📅', label: 'Tutorías' },
+    { id: 'configuracion', icon: '⚙️', label: 'Configuración' }
+  ],
+  director: [
+    { id: 'inicio', icon: '🏠', label: 'Panel principal' },
+    { id: 'estudiantes-direccion', icon: '👥', label: 'Estudiantes' },
+    { id: 'profesores-direccion', icon: '👩‍🏫', label: 'Profesores' },
+    { id: 'reportes', icon: '📊', label: 'Reportes' },
+    { id: 'configuracion', icon: '⚙️', label: 'Configuración' }
+  ],
+  coordinador: [
+    { id: 'inicio', icon: '🏠', label: 'Panel principal' },
+    { id: 'estudiantes-coordinacion', icon: '👥', label: 'Estudiantes' },
+    { id: 'profesores-coordinacion', icon: '👩‍🏫', label: 'Profesores' },
+    { id: 'observaciones-coordinacion', icon: '📝', label: 'Observaciones' },
+    { id: 'tutorias-coordinacion', icon: '📅', label: 'Tutorías' },
+    { id: 'configuracion', icon: '⚙️', label: 'Configuración' }
+  ]
+}
+
+const menuItems = computed(() => menuByRole[props.role] ?? menuByRole.docente)
 </script>
 
 <template>
@@ -22,52 +67,18 @@ const emit = defineEmits(['navigate', 'logout'])
       </div>
     </div>
     
-    <nav class="sidebar-menu">
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'inicio' }" @click="emit('navigate', 'inicio')">
-        <span>🛖</span>
-        <span>Inicio</span>
+    <nav class="sidebar-menu" aria-label="Secciones disponibles">
+      <button
+        v-for="item in menuItems"
+        :key="item.id"
+        type="button"
+        class="menu-item"
+        :class="{ 'is-active': activeView === item.id }"
+        @click="emit('navigate', item.id)"
+      >
+        <span aria-hidden="true">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
       </button>
-      
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'nueva-citacion' }" @click="emit('navigate', 'nueva-citacion')">
-        <span>➕</span>
-        <span>Nueva Citación</span>
-      </button>
-      
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'mis-citaciones' }" @click="emit('navigate', 'mis-citaciones')">
-        <span>📋</span>
-        <span>Mis Citaciones</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'materias' }" @click="emit('navigate', 'materias')">
-        <span>📖</span>
-        <span>Materias</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'estudiantes' }" @click="emit('navigate', 'estudiantes')">
-        <span>👥</span>
-        <span>Estudiantes</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'asistencia' }" @click="emit('navigate', 'asistencia')">
-        <span>✓</span>
-        <span>Asistencia</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'horarios' }" @click="emit('navigate', 'horarios')">
-        <span>📅</span>
-        <span>Horarios de Tutorias</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'reportes' }" @click="emit('navigate', 'reportes')">
-        <span>📊</span>
-        <span>Reportes</span>
-      </button>
-
-      <button type="button" class="menu-item" :class="{ 'is-active': activeView === 'configuracion' }" @click="emit('navigate', 'configuracion')">
-        <span>⚙️</span>
-        <span>Configuración</span>
-      </button>
-
     </nav>
      
     <div class="sidebar-footer">
