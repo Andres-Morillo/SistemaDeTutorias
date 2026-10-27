@@ -195,7 +195,6 @@ function logout() {
 </script>
 
 <template>
-<<<<<<< Updated upstream
   <div class="app">
 
     <div v-show="!isWorkspaceVisible" class="auth-view">
@@ -209,16 +208,6 @@ function logout() {
         />
       </KeepAlive>
     </div>
-=======
-  <login></login>
-<sidebar>
-  <main class="contenido">
-    <h1>Bienvenido/a</h1>
-    <p>A Sistema de Tutorías</p>
-  </main>
-  </sidebar>
->>>>>>> Stashed changes
-
     <div v-if="isWorkspaceVisible" class="layout">
       <Sidebar
         :active-view="currentSection"
@@ -330,8 +319,4 @@ body {
     width: 100%;
   }
 }
-<<<<<<< Updated upstream
 </style>
-=======
-</style>
->>>>>>> Stashed changes
