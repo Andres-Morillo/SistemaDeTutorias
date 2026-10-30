@@ -7,13 +7,12 @@ Aplicación web para la gestión de tutorías, desarrollada con **Vue 3** y **Vi
 - Interfaz de página única (SPA) construida con Vue 3.
 - Barra lateral (sidebar) de navegación.
 - Iconografía para notificaciones, seguridad, contacto y ubicación (campana, candado, correo, mapa y teléfono).
-- Entorno de desarrollo con recarga en caliente (Hot Module Replacement).
 
 ## Tecnologías
 
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vite.dev/)
-- JavaScript (ES Modules)
+- JavaScript 
 - npm
 - Chat gpt framework
 - Claude.ia
