@@ -86,7 +86,7 @@ La configuración de Vite se encuentra en `vite.config.js`. Consulta la [referen
 
 **Andrés Morillo** - [@Andres-Morillo](https://github.com/Andres-Morillo)
 
-## Contribuidores
+## Colaboradores
 
 **Blazquez Igancio**
 **Naiara Palacio**
