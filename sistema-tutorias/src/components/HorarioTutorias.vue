@@ -9,8 +9,8 @@
             Consultá y administrá los horarios disponibles para tus estudiantes.
           </p>
         </div>
-        <button class="bell" type="button" aria-label="Notificaciones">
-          ♧<b>3</b>
+        <button class="bell" type="button" aria-label="Actualizar horarios" :disabled="isLoading" @click="loadSchedules">
+          ↻
         </button>
       </header>
 
@@ -18,22 +18,22 @@
         <article class="overview-card purple">
           <span class="icon">▦</span>
           <div>
-            <small>Horarios activos</small><strong>7</strong
+            <small>Horarios cargados</small><strong>{{ schedules.length }}</strong
             ><span>esta semana</span>
           </div>
         </article>
         <article class="overview-card green">
           <span class="icon">✓</span>
           <div>
-            <small>Cupos disponibles</small><strong>38</strong
-            ><span>estudiantes</span>
+            <small>Materias disponibles</small><strong>{{ subjectCount }}</strong
+            ><span>en la agenda</span>
           </div>
         </article>
         <article class="overview-card yellow">
           <span class="icon">◷</span>
           <div>
-            <small>Próximo horario</small><strong>08:00</strong
-            ><span>lunes · Robótica</span>
+            <small>Primer horario</small><strong>{{ firstSchedule?.time || '—' }}</strong
+            ><span>{{ firstSchedule ? `${firstSchedule.day} · ${firstSchedule.subject}` : 'Sin horarios cargados' }}</span>
           </div>
         </article>
       </section>
@@ -44,13 +44,7 @@
             <span class="section-label">Agenda docente</span>
             <h2>Mis horarios</h2>
           </div>
-          <button
-            class="primary"
-            type="button"
-            @click="showMessage('Nuevo horario')"
-          >
-            ＋ Agregar horario
-          </button>
+          <span class="section-label">Datos sincronizados con Supabase</span>
         </div>
         <div class="toolbar">
           <label
@@ -79,17 +73,18 @@
                 <th>Curso</th>
                 <th>Día</th>
                 <th>Horario</th>
-                <th>Estudiantes</th>
-                <th>Estado</th>
-                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
+              <tr v-if="isLoading">
+                <td colspan="4" class="empty">Cargando tutorías…</td>
+              </tr>
+              <tr v-else-if="errorMessage">
+                <td colspan="4" class="empty" role="alert">{{ errorMessage }}</td>
+              </tr>
               <tr v-for="item in filteredSchedules" :key="item.id">
                 <td>
-                  <span class="subject"
-                    ><i :class="item.color"></i>{{ item.subject }}</span
-                  >
+                  <span class="subject">{{ item.subject }}</span>
                 </td>
                 <td>
                   <b>{{ item.course }}</b>
@@ -98,39 +93,15 @@
                 <td>
                   <span class="time">{{ item.time }}</span>
                 </td>
-                <td>
-                  <span class="students"
-                    >{{ item.students }} <small>cupos</small></span
-                  >
-                </td>
-                <td>
-                  <span class="status" :class="item.statusClass">{{
-                    item.status
-                  }}</span>
-                </td>
-                <td>
-                  <div class="actions">
-                    <button
-                      type="button"
-                      @click="showMessage('Editando ' + item.subject)"
-                    >
-                      ✎</button
-                    ><button
-                      type="button"
-                      @click="showMessage('Viendo detalles de ' + item.subject)"
-                    >
-                      →
-                    </button>
-                  </div>
+              </tr>
+              <tr v-if="!isLoading && !errorMessage && !filteredSchedules.length">
+                <td colspan="4" class="empty">
+                  {{ schedules.length ? 'No encontramos tutorías con esos filtros.' : 'Todavía no hay tutorías. Agregá una desde Supabase Studio.' }}
                 </td>
               </tr>
             </tbody>
           </table>
-          <p v-if="!filteredSchedules.length" class="empty">
-            No encontramos horarios con esos filtros.
-          </p>
         </div>
-        <p v-if="message" class="message">{{ message }}</p>
       </section>
 
       <footer class="landscape">
@@ -142,92 +113,18 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from 'vue'
+import { supabase, supabaseConfigured } from '../lib/supabase'
 
-const search = ref("");
-const day = ref("Todos");
-const message = ref("");
-const schedules = [
-  {
-    id: 1,
-    subject: "Robótica",
-    course: "4°",
-    day: "Lunes",
-    time: "08:00 - 08:40",
-    students: 10,
-    status: "Disponible",
-    statusClass: "available",
-    color: "green-dot",
-  },
-  {
-    id: 2,
-    subject: "Programación",
-    course: "3°",
-    day: "Martes",
-    time: "08:00 - 08:40",
-    students: 5,
-    status: "Disponible",
-    statusClass: "available",
-    color: "purple-dot",
-  },
-  {
-    id: 3,
-    subject: "Ciencias",
-    course: "2°",
-    day: "Jueves",
-    time: "13:00 - 13:40",
-    students: 7,
-    status: "Completo",
-    statusClass: "full",
-    color: "blue-dot",
-  },
-  {
-    id: 4,
-    subject: "Robótica",
-    course: "1°",
-    day: "Viernes",
-    time: "08:00 - 08:40",
-    students: 7,
-    status: "Disponible",
-    statusClass: "available",
-    color: "green-dot",
-  },
-  {
-    id: 5,
-    subject: "D. Prácticas Integradas",
-    course: "4°",
-    day: "Miércoles",
-    time: "08:00 - 08:40",
-    students: 11,
-    status: "Completo",
-    statusClass: "full",
-    color: "yellow-dot",
-  },
-  {
-    id: 6,
-    subject: "Ética y Ciudadanía",
-    course: "4°",
-    day: "Martes",
-    time: "15:00 - 16:00",
-    students: 2,
-    status: "Disponible",
-    statusClass: "available",
-    color: "pink-dot",
-  },
-  {
-    id: 7,
-    subject: "Curso de Ciencia",
-    course: "2°",
-    day: "Lunes",
-    time: "08:00 - 08:40",
-    students: 8,
-    status: "Disponible",
-    statusClass: "available",
-    color: "blue-dot",
-  },
-];
+const search = ref('')
+const day = ref('Todos')
+const schedules = ref([])
+const isLoading = ref(false)
+const errorMessage = ref('')
+const firstSchedule = computed(() => schedules.value[0])
+const subjectCount = computed(() => new Set(schedules.value.map((item) => item.subject)).size)
 const filteredSchedules = computed(() =>
-  schedules.filter(
+  schedules.value.filter(
     (item) =>
       (day.value === "Todos" || item.day === day.value) &&
       `${item.subject} ${item.course}`
@@ -235,12 +132,49 @@ const filteredSchedules = computed(() =>
         .includes(search.value.toLowerCase()),
   ),
 );
-function resetFilters() {
-  search.value = "";
-  day.value = "Todos";
+onMounted(loadSchedules)
+
+async function loadSchedules() {
+  if (!supabaseConfigured || !supabase) {
+    errorMessage.value = 'Falta configurar la URL y la clave publicable de Supabase en .env.local.'
+    return
+  }
+
+  isLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    const { data, error } = await supabase
+      .from('tutorias')
+      .select('id, materia, curso, dia, horario')
+      .order('id')
+
+    if (error) {
+      console.error('No se pudieron cargar las tutorías desde Supabase.', error)
+      errorMessage.value = `No se pudieron cargar las tutorías: ${error.message}`
+      schedules.value = []
+      return
+    }
+
+    schedules.value = data.map((item) => ({
+      id: item.id,
+      subject: item.materia,
+      course: item.curso,
+      day: item.dia,
+      time: item.horario
+    }))
+  } catch (error) {
+    console.error('No se pudo conectar con Supabase para cargar las tutorías.', error)
+    errorMessage.value = 'No se pudo conectar con Supabase. Revisá tu conexión e intentá actualizar.'
+    schedules.value = []
+  } finally {
+    isLoading.value = false
+  }
 }
-function showMessage(value) {
-  message.value = `${value}: esta acción estará disponible al conectar el backend.`;
+
+function resetFilters() {
+  search.value = ''
+  day.value = 'Todos'
 }
 </script>
 

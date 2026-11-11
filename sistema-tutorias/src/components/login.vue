@@ -60,12 +60,12 @@
 
           <form @submit.prevent="handleSubmit" novalidate>
             <div class="input-group">
-              <label for="email">Correo o usuario</label>
+              <label for="email">Correo electrónico</label>
               <input
                 id="email"
                 v-model.trim="form.email"
-                type="text"
-                autocomplete="username"
+                type="email"
+                autocomplete="email"
                 placeholder="nombre@escuela.edu.ar"
                 required
               />
@@ -117,13 +117,8 @@
               {{ statusMessage }}
             </p>
 
-            <div class="separator"></div>
-
             <p class="register">
-              ¿No tenés cuenta?
-              <button type="button" @click="solicitarRegistro">
-                Registrarse
-              </button>
+              Las cuentas de prueba las crea el docente desde Supabase.
             </p>
           </form>
         </template>
@@ -147,29 +142,7 @@
               />
             </div>
 
-            <p class="recovery-label">Elegí cómo recibir las instrucciones</p>
-            <div class="recovery-options" role="group" aria-label="Método de recuperación">
-              <button
-                type="button"
-                class="recovery-option"
-                :class="{ selected: recoveryMethod === 'codigo' }"
-                :aria-pressed="recoveryMethod === 'codigo'"
-                @click="recoveryMethod = 'codigo'"
-              >
-                <strong>Código</strong>
-                <small>Ingresar un código de 4 dígitos</small>
-              </button>
-              <button
-                type="button"
-                class="recovery-option"
-                :class="{ selected: recoveryMethod === 'enlace' }"
-                :aria-pressed="recoveryMethod === 'enlace'"
-                @click="recoveryMethod = 'enlace'"
-              >
-                <strong>Enlace</strong>
-                <small>Abrir un enlace de recuperación</small>
-              </button>
-            </div>
+            <p class="recovery-label">Te enviaremos un enlace a tu correo.</p>
 
             <p v-if="recoveryMessage" class="status-message" role="status">
               {{ recoveryMessage }}
@@ -180,44 +153,14 @@
             </button>
           </form>
 
-          <div v-else-if="recoveryStep === 'verify'">
-            <div class="recovery-note" role="status">
-              <strong>Protocolo de prueba</strong>
-              <span>En un sistema real enviaríamos este código a {{ recoveryEmail }}.</span>
-              <span class="demo-code">{{ recoveryExpectedCode }}</span>
-            </div>
-            <form @submit.prevent="verifyRecoveryCode" novalidate>
-              <div class="input-group">
-                <label for="recovery-code">Código de verificación</label>
-                <input
-                  id="recovery-code"
-                  v-model.trim="recoveryCodeInput"
-                  type="text"
-                  inputmode="numeric"
-                  autocomplete="one-time-code"
-                  maxlength="4"
-                  placeholder="1234"
-                  required
-                />
-              </div>
-              <p v-if="recoveryMessage" class="status-message" role="status">
-                {{ recoveryMessage }}
-              </p>
-              <button type="submit" class="login-button">
-                <span>Verificar código</span><span aria-hidden="true">→</span>
-              </button>
-            </form>
-          </div>
-
           <div v-else-if="recoveryStep === 'sent-link'" class="recovery-note" role="status">
-            <strong>Enlace de prueba generado</strong>
-            <span>En un sistema real enviaríamos el enlace a {{ recoveryEmail }}.</span>
-            <a class="recovery-link" :href="recoveryUrl">Abrir enlace de recuperación</a>
+            <strong>Revisá tu correo</strong>
+            <span>{{ recoveryMessage }}</span>
           </div>
 
           <form v-else-if="recoveryStep === 'reset'" @submit.prevent="resetPassword" novalidate>
             <p class="recovery-note" role="status">
-              {{ recoveryMethod === 'enlace' ? 'Enlace de prueba validado.' : 'Código verificado.' }} Elegí una contraseña nueva.
+              Elegí una contraseña nueva para tu cuenta.
             </p>
             <div class="input-group">
               <label for="new-password">Nueva contraseña</label>
@@ -236,8 +179,8 @@
           </form>
 
           <div v-else class="recovery-note" role="status">
-            <strong>Protocolo completado</strong>
-            <span>La contraseña de prueba se restableció. Ya podés volver al acceso.</span>
+            <strong>Contraseña actualizada</strong>
+            <span>Ya podés iniciar sesión con tu nueva contraseña.</span>
           </div>
 
           <button type="button" class="recovery-back" @click="closeRecovery">
@@ -266,21 +209,15 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
+import { supabase, supabaseConfigured } from '../lib/supabase'
 
-const emit = defineEmits(['cambiar-a-registro', 'iniciar-sesion'])
+const emit = defineEmits(['iniciar-sesion'])
 
 const initialRecoveryParams = new URLSearchParams(window.location.search)
 const hasRecoveryParams = initialRecoveryParams.get('flujo') === 'recuperar'
-const recoveryToken = initialRecoveryParams.get('token') || ''
-const recoveryExpectedCode = ref(initialRecoveryParams.get('codigo') || '1234')
-const recoveryMethod = ref(initialRecoveryParams.get('metodo') || (recoveryToken ? 'enlace' : 'codigo'))
-const recoveryStep = ref(
-  recoveryToken ? 'reset' : initialRecoveryParams.has('codigo') ? 'verify' : 'request'
-)
-const isRecovery = ref(hasRecoveryParams)
+const recoveryStep = ref(window.location.hash.includes('type=recovery') ? 'reset' : 'request')
+const isRecovery = ref(hasRecoveryParams || window.location.hash.includes('type=recovery'))
 const recoveryEmail = ref(initialRecoveryParams.get('email') || '')
-const recoveryCodeInput = ref('')
-const recoveryUrl = ref('')
 const recoveryMessage = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
@@ -318,24 +255,39 @@ const features = [
   }
 ]
 
-function handleSubmit() {
+async function handleSubmit() {
   statusMessage.value = ''
 
   if (!form.email || !form.password) {
-    statusMessage.value = 'Completá tu usuario y contraseña para continuar.'
+    statusMessage.value = 'Completá tu correo y contraseña para continuar.'
+    return
+  }
+
+  if (!supabaseConfigured || !supabase) {
+    statusMessage.value = 'Falta configurar Supabase. Completá .env.local y reiniciá la aplicación.'
     return
   }
 
   isSubmitting.value = true
 
-  window.setTimeout(() => {
-    isSubmitting.value = false
-    statusMessage.value = 'Sesión de prueba iniciada.'
-    emit('iniciar-sesion', {
-      email: form.email,
-      name: form.email.includes('@') ? form.email.split('@')[0] : form.email
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: form.email.trim(),
+      password: form.password
     })
-  }, 500)
+
+    if (error) {
+      statusMessage.value = `No se pudo iniciar sesión: ${error.message}`
+      return
+    }
+
+    emit('iniciar-sesion', data.user)
+  } catch (error) {
+    console.error('No se pudo conectar con Supabase para iniciar sesión.', error)
+    statusMessage.value = 'No se pudo conectar con Supabase. Revisá tu conexión e intentá de nuevo.'
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 function openRecovery() {
@@ -344,43 +296,36 @@ function openRecovery() {
   recoveryMessage.value = ''
 }
 
-function sendRecovery() {
+async function sendRecovery() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recoveryEmail.value)) {
     recoveryMessage.value = 'Ingresá un correo válido para continuar.'
     return
   }
 
-  recoveryMessage.value = ''
-  const params = new URLSearchParams({
-    flujo: 'recuperar',
-    email: recoveryEmail.value,
-    metodo: recoveryMethod.value
-  })
-
-  if (recoveryMethod.value === 'codigo') {
-    recoveryExpectedCode.value = '1234'
-    recoveryCodeInput.value = ''
-    params.set('codigo', recoveryExpectedCode.value)
-    recoveryStep.value = 'verify'
+  if (!supabaseConfigured || !supabase) {
+    recoveryMessage.value = 'Falta configurar Supabase para recuperar la contraseña.'
     return
   }
 
-  const token = `prueba-${Date.now()}`
-  params.set('token', token)
-  recoveryUrl.value = `${window.location.origin}${window.location.pathname}?${params.toString()}`
-  recoveryStep.value = 'sent-link'
-}
-
-function verifyRecoveryCode() {
-  if (recoveryCodeInput.value !== recoveryExpectedCode.value) {
-    recoveryMessage.value = 'El código no coincide. Revisá el código de prueba e intentá de nuevo.'
-    return
-  }
   recoveryMessage.value = ''
-  recoveryStep.value = 'reset'
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail.value, {
+      redirectTo: window.location.origin
+    })
+    if (error) {
+      recoveryMessage.value = `No se pudo enviar el correo: ${error.message}`
+      return
+    }
+
+    recoveryMessage.value = `Enviamos un enlace de recuperación a ${recoveryEmail.value}.`
+    recoveryStep.value = 'sent-link'
+  } catch (error) {
+    console.error('No se pudo conectar con Supabase para recuperar la contraseña.', error)
+    recoveryMessage.value = 'No se pudo conectar con Supabase. Revisá tu conexión e intentá de nuevo.'
+  }
 }
 
-function resetPassword() {
+async function resetPassword() {
   if (newPassword.value.length < 8) {
     recoveryMessage.value = 'La contraseña debe tener al menos 8 caracteres.'
     return
@@ -389,9 +334,26 @@ function resetPassword() {
     recoveryMessage.value = 'Las contraseñas no coinciden.'
     return
   }
-  recoveryMessage.value = ''
-  recoveryStep.value = 'complete'
-  window.history.replaceState({}, document.title, window.location.pathname)
+
+  if (!supabase) {
+    recoveryMessage.value = 'Falta configurar Supabase para cambiar la contraseña.'
+    return
+  }
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword.value })
+    if (error) {
+      recoveryMessage.value = `No se pudo cambiar la contraseña: ${error.message}`
+      return
+    }
+
+    recoveryMessage.value = ''
+    recoveryStep.value = 'complete'
+    window.history.replaceState({}, document.title, window.location.pathname)
+  } catch (error) {
+    console.error('No se pudo conectar con Supabase para cambiar la contraseña.', error)
+    recoveryMessage.value = 'No se pudo conectar con Supabase. Revisá tu conexión e intentá de nuevo.'
+  }
 }
 
 function closeRecovery() {
@@ -399,10 +361,6 @@ function closeRecovery() {
   recoveryStep.value = 'request'
   recoveryMessage.value = ''
   window.history.replaceState({}, document.title, window.location.pathname)
-}
-
-function solicitarRegistro() {
-  emit('cambiar-a-registro')
 }
 </script>
 

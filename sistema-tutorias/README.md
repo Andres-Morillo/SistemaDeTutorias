@@ -1,38 +1,36 @@
-# sistema-tutorias
+# Sistema de Tutorías
 
-This template should help get you started developing with Vue 3 in Vite.
+Aplicación Vue 3 para consultar horarios de tutorías guardados en Supabase.
 
-## Recommended IDE Setup
+## Conectar con Supabase
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+1. En Supabase, abrí **SQL Editor**, pegá el contenido de `supabase/setup.sql` y ejecutalo. Crea `public.tutorias`, mantiene RLS activado, permite consultar a usuarios autenticados e inserta una tutoría de ejemplo.
+2. En **Authentication → Users**, creá una cuenta de prueba. La aplicación no habilita registro libre.
+3. En **Authentication → URL Configuration**, configurá `http://localhost:5173` como **Site URL** y agregá `http://localhost:5173/**` a **Redirect URLs** para la recuperación de contraseña en desarrollo.
+4. Copiá `.env.example` como `.env.local` y reemplazá los valores con la **Project URL** y la **publishable key** de **Project Settings → API**.
 
-## Recommended Browser Setup
+   En PowerShell:
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
 
-## Customize configuration
+   No compartas `.env.local` ni uses una clave `service_role` en el navegador. `.env.local` está excluido del repositorio.
+5. Instalá las dependencias e iniciá el proyecto:
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+   ```sh
+   npm install
+   npm run dev
+   ```
 
-## Project Setup
+   Si Vite ya estaba ejecutándose cuando completaste `.env.local`, reinicialo para que lea las variables.
+6. Iniciá sesión con la cuenta creada en Supabase. En **Horario de tutorías** debe aparecer el ejemplo de Robótica. Podés cambiar la materia desde **Table Editor → tutorias**, volver a la aplicación y actualizar la lista.
 
-```sh
-npm install
-```
+La tabla solo permite lectura a usuarios autenticados mediante la política RLS. Las altas y modificaciones de ejemplo se hacen desde Supabase Studio; la pantalla de horarios es de consulta y filtros, no de edición.
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
+## Desarrollo
 
 ```sh
 npm run build
+npm run preview
 ```
